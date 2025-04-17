@@ -1,37 +1,38 @@
 <?php
-require_once($_SERVER["DOCUMENT_ROOT"] . "/db/db_conn.php");
-require_once($_SERVER["DOCUMENT_ROOT"] . "/db/session.php");
+    require_once($_SERVER["DOCUMENT_ROOT"] . "/db/db_conn.php");
+    require_once($_SERVER["DOCUMENT_ROOT"] . "/db/session.php");
 
-$stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id");
-$stmt->execute();
-$tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    setCurrentUser(2);
 
-$currUser = getCurrentUser();
-$rankName = getCurrentRankName();
-$rankId = getCurrentRank();
+    $currUser = getCurrentUser();
+    $rankName = getCurrentRankName();
+    $rankId = getCurrentRank();
 
-
-$selectedticket = -1;
-if(isset($_GET) && isset($_GET["ticketid"]))
-{
-    $selectedticket = $_GET["ticketid"];
-}
-
-
-    $stmt = $conn->prepare("SELECT * FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id WHERE t.id=?");
-    $stmt->execute([$selectedticket]);
-    $selectedticket = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if (count($selectedticket) >= 1)
+    if($rankId == 2) // Admin
     {
-        $selectedticket = $selectedticket[0];
-    }
-    else {
-        $stmt = $conn->prepare("SELECT * FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id ORDER BY t.id DESC");
+        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id");
         $stmt->execute();
+        $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    else { // User (!= admin)
+        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id WHERE t.user_id=?");
+        $stmt->execute([$currUser["userid"]]);
+        $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    $ticketid = $_GET["ticketid"]; 
+    if(isset($ticketid))
+    {
+        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, u2.username claimed_by, t.claimed_by claimed_by_id FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id LEFT JOIN users u2 on u2.id=t.claimed_by WHERE t.id=?");
+        $stmt->execute([$ticketid]);
         $selectedticket = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
     }
 
+    if($selectedticket["userid"] != $currUser["userid"] && $currUser["role_id"] != '2')
+    {
+        $selectedticket = NULL;
+    }
 ?>
 
 <!DOCTYPE html>
@@ -52,6 +53,10 @@ if(isset($_GET) && isset($_GET["ticketid"]))
     </script>
 </head>
 <body class="bg-slate-900">
+    <!-- just using this to grab the ticket id from JS, don't edit. -->
+    <p id="ticketid" style="display:none;"><?= $selectedticket["ticketid"] ?></p> 
+
+
     <main>
         <div class="ticket-container bg-slate-500">
             <div class="leftside bg-slate-800">
@@ -69,11 +74,11 @@ if(isset($_GET) && isset($_GET["ticketid"]))
                     foreach($tickets as $ticket)
                     {
                 ?>  
-                    <div class="user-card bg-slate-900" onclick="setTicketParam(<?= $ticket['ticketid'] ?>)">
-                        <img class="user-pfp ml-5" src="https://th.bing.com/th/id/OIP.3GUcZMTvbmQWkRlxfQ2wBQHaJa?w=140&h=180&c=7&r=0&o=5&pid=1.7">
+                    <div class="user-card <?php if($selectedticket["ticketid"]==$ticket["ticketid"]) echo 'bg-slate-900' ?>" onclick="setTicketParam(<?= $ticket['ticketid'] ?>)">
+                        <img class="user-pfp ml-5" src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg">
                         <div class="user-combo">
                             <p class="username text-blue-300"><?= $ticket["username"] ?></p>
-                            <p class="rank text-gray-500"><?= $ticket["name"] ?></p>
+                            <p class="rank text-gray-500"><?= $ticket["title"] ?></p>
                         </div>
                     </div>
                 <?php
@@ -82,20 +87,39 @@ if(isset($_GET) && isset($_GET["ticketid"]))
 
 
             </div>
-            
+                
+            <?php if(!is_null($selectedticket)) { ?>
             <div class="rightside">
                 <div class="topbar-info bg-slate-700">
-                    <img class="user-pfp ml-5" src="https://www.instinct-animal.fr/wp-content/uploads/2019/10/ornithorynque-4.jpg">
+                    <img class="user-pfp ml-5" src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg">
                     <div class="user-info-container">
                         <p class="username ml-3 text-blue-300"><?= $selectedticket["username"] ?></p>
                         <p class="user-rank ml-3 text-gray-500"><?= $selectedticket["name"] ?></p>
                     </div>
                 </div>
                 <div class="messages-container">
+                    <div class="messages" id="messages">
+                        <?php
+                        $stmt = $conn->prepare("SELECT * FROM ticket_replies WHERE ticket_id=?");
+                        $stmt->execute([$selectedticket["ticketid"]]);
+                        $ticketReplies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+                        foreach($ticketReplies as $reply)
+                        {
+                            if($reply["user_id"] == $currUser["userid"])
+                            {
+                                echo '<p class="self-message">' . $reply["message"] . '</p>';
+                            }
+                            else
+                            {
+                                echo '<p class="other-message">' . $reply["message"] . '</p>';
+                            }
+                        }
+                        ?>
+                    </div>
                 </div>
                 <div class="msginput-container">
-                    <input type="text" class="msginput bg-slate-600">
+                    <input type="text" class="msginput bg-slate-600" id="msginput" onkeydown="sendmsg(this)">
                     <i class="fa-regular fa-paper-plane fa-xl ml-3"></i>
                 </div>
             </div>
@@ -108,15 +132,32 @@ if(isset($_GET) && isset($_GET["ticketid"]))
                 </div>
                 <div class="statusbar">
                     <p class="ticketstatus">Status: <strong>Processing</strong></p>
-                    <p class="ticketclaimer">Claimed by: <strong>Dimitri</strong></p>
+                    <?php
+                        if(is_null($selectedticket["claimed_by"]))
+                        {
+                            echo '<p class="ticketclaimer">Claimed by: <strong>' . 'NONE' . '</strong></p>';
+                        }
+                        else 
+                        {
+                            echo '<p class="ticketclaimer">Claimed by: <strong>' . $selectedticket["claimed_by"] . '</strong></p>';
+                        }
+                    ?> 
                 </div>
             </div>
+
+            <?php } else {
+                ?> 
+                <style>
+                    .ticket-container {
+                        justify-content: left;
+                    }
+                </style>
+                <?php
+            } ?>
         </div>
     </main>
-
-
     
-
     
+    <script src="./js/tickets.js"></script>
 </body>
 </html>

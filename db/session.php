@@ -16,7 +16,7 @@
     {
         $conn = new PDO("mysql:host=localhost:3306;dbname=getticket", "root", "root");
 
-        $stmt = $conn->prepare("SELECT * FROM users u INNER JOIN roles r ON u.id=r.id WHERE u.id=?");
+        $stmt = $conn->prepare("SELECT u.id userid, u.username username, u.email email, u.password password, u.role_id role_id, r.name role_name FROM users u INNER JOIN roles r ON u.role_id=r.id WHERE u.id=?");
         $stmt->execute( [$_SESSION["id"]] );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
@@ -36,7 +36,7 @@
     {
         $conn = new PDO("mysql:host=localhost:3306;dbname=getticket", "root", "root");
 
-        $stmt = $conn->prepare("SELECT r.name FROM users u INNER JOIN roles r ON u.id=r.id WHERE u.id=?");
+        $stmt = $conn->prepare("SELECT r.name FROM users u INNER JOIN roles r ON u.role_id=r.id WHERE u.id=?");
         $stmt->execute( [$_SESSION["id"]] );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC)[0]["name"];

@@ -98,8 +98,8 @@ main {
 }
 
 .personal-user-card {
-    border-right: whitesmoke 1px solid;
-    border-bottom: whitesmoke 1px solid;
+    border-right: rgb(175, 175, 175) 1px dotted;
+    border-bottom: rgb(175, 175, 175) 1px dotted;
 }
 
 .user-card .user-combo {
@@ -143,4 +143,25 @@ main {
 
 .farright .statusbar .ticketclaimer {
     color: rgb(242, 186, 0);
+}
+
+.self-message {
+    text-align:right;
+    margin: 0px 10px;
+    font-size: 1.25em;
+    border-right: 5px red solid;
+    padding: 0px 10px;
+}
+
+.other-message {
+    text-align:left;
+    margin: 0px 10px;
+    font-size: 1.25em;
+    border-left: 5px blue solid;
+    padding: 0px 10px;
+}
+
+.messages {
+    position:relative;
+    top:10px;
 }
