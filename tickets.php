@@ -2,19 +2,23 @@
     require_once($_SERVER["DOCUMENT_ROOT"] . "/db/db_conn.php");
     require_once($_SERVER["DOCUMENT_ROOT"] . "/db/session.php");
 
-    setCurrentUser(2);
 
     $currUser = getCurrentUser();
     $rankName = getCurrentRankName();
     $rankId = getCurrentRank();
 
-    if($rankId == 2) // Admin
+    if(is_null($currUser))
+    {
+        Header("Location: /login.php");
+    }
+
+    if($rankId == 2) // Admin (show every ticket)
     {
         $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id");
         $stmt->execute();
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    else { // User (!= admin)
+    else { // User (!= admin) only fetch tickets that are opened by themselves
         $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id WHERE t.user_id=?");
         $stmt->execute([$currUser["userid"]]);
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -108,11 +112,11 @@
                         {
                             if($reply["user_id"] == $currUser["userid"])
                             {
-                                echo '<p class="self-message">' . $reply["message"] . '</p>';
+                                echo '<p class="self-message">' . htmlspecialchars($reply["message"]) . '</p>';
                             }
                             else
                             {
-                                echo '<p class="other-message">' . $reply["message"] . '</p>';
+                                echo '<p class="other-message">' . htmlspecialchars($reply["message"]) . '</p>';
                             }
                         }
                         ?>
@@ -127,19 +131,39 @@
             <div class="farright bg-slate-800">
                 <div class="actions">
                     <p class="actiontitle mt-5 text-white text-2xl">Actions</p>
-                    <button type="button" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Claim Ticket</button>
-                    <button type="button" class="mt-3 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Close Ticket</button>
+                    <?php
+                        if($currUser["role_id"] == 2)
+                            {
+                            if (is_null($selectedticket["claimed_by_id"]))
+                            {
+                        ?>
+                            <button type="button" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onclick='claimTicket(<?= $selectedticket["ticketid"]?>, this, "<?= $currUser["username"] ?>")'>Claim Ticket</button>
+                        <?php 
+                            } else {
+                        ?>
+                            <button type="button" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onclick='unclaimTicket(<?= $selectedticket["ticketid"]?>, this, "<?= $currUser["username"] ?>")'>Unclaim Ticket</button>
+                        <?php
+                            }
+                        }
+
+                        if($selectedticket["status"] == "open")
+                        {
+                    ?>
+                        <button type="button" class="mt-3 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900" onclick="closeTicket(<?= $selectedticket['ticketid'] ?>)">Close Ticket</button>
+                    <?php } else{ ?>
+                        <button type="button" class="mt-3 focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5" onclick="openTicket(<?= $selectedticket['ticketid'] ?>)">Open Ticket</button>
+                    <?php } ?>
                 </div>
                 <div class="statusbar">
-                    <p class="ticketstatus">Status: <strong>Processing</strong></p>
+                    <p class="ticketstatus">Status: <strong><?= $selectedticket["status"] ?></strong></p>
                     <?php
                         if(is_null($selectedticket["claimed_by"]))
                         {
-                            echo '<p class="ticketclaimer">Claimed by: <strong>' . 'NONE' . '</strong></p>';
+                            echo '<p id="ticketclaimer" class="ticketclaimer">Claimed by: <strong>' . 'NONE' . '</strong></p>';
                         }
                         else 
                         {
-                            echo '<p class="ticketclaimer">Claimed by: <strong>' . $selectedticket["claimed_by"] . '</strong></p>';
+                            echo '<p id="ticketclaimer" class="ticketclaimer">Claimed by: <strong>' . $selectedticket["claimed_by"] . '</strong></p>';
                         }
                     ?> 
                 </div>
@@ -155,6 +179,10 @@
                 <?php
             } ?>
         </div>
+
+
+        <button class="logout-button" onclick="logout()">Logout</button>
+
     </main>
     
     
