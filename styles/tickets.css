@@ -188,3 +188,26 @@ main {
     cursor: pointer;
     opacity: 90%;
 }
+
+
+.disabled-msg-input:hover {
+    cursor:not-allowed;
+}
+
+.system-msg-container {
+    max-width: 75ch;
+    margin: 0 auto;
+    padding: 0;
+    word-wrap: anywhere;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+.system-message {
+    text-align:center;
+    margin: 0px 10px;
+    font-size: 1.25em;
+    padding: 0px 10px;
+    font-weight: 600;
+    text-decoration: underline;
+}

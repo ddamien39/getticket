@@ -14,12 +14,12 @@
 
     if($rankId == 2) // Admin (show every ticket)
     {
-        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id");
+        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id ORDER BY ticketid DESC");
         $stmt->execute();
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     else { // User (!= admin) only fetch tickets that are opened by themselves
-        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id WHERE t.user_id=?");
+        $stmt = $conn->prepare("SELECT t.id ticketid, t.user_id userid, t.title title, t.description description, t.status status, u.username username, r.name name, t.claimed_by claimed_by FROM tickets t INNER JOIN users u ON t.user_id=u.id INNER JOIN roles r ON u.role_id=r.id WHERE t.user_id=? ORDER BY ticketid DESC");
         $stmt->execute([$currUser["userid"]]);
         $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -59,6 +59,7 @@
 <body class="bg-slate-900">
     <!-- just using this to grab the ticket id from JS, don't edit. -->
     <p id="ticketid" style="display:none;"><?= $selectedticket["ticketid"] ?></p> 
+    <p id="currentuserid" style="display:none;"><?= $currUser["userid"] ?></p> 
 
 
     <main>
@@ -98,32 +99,44 @@
                     <img class="user-pfp ml-5" src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg">
                     <div class="user-info-container">
                         <p class="username ml-3 text-blue-300"><?= $selectedticket["username"] ?></p>
-                        <p class="user-rank ml-3 text-gray-500"><?= $selectedticket["name"] ?></p>
+                        <p class="user-rank ml-3 text-gray-500"><?= $selectedticket["title"] ?></p>
                     </div>
                 </div>
                 <div class="messages-container">
                     <div class="messages" id="messages">
+                        <div class="system-msg-container">
+                            <p class="system-message"><strong>Ticket Opened:</strong> <?= $selectedticket["description"] ?></p>
+                        </div>
                         <?php
-                        $stmt = $conn->prepare("SELECT * FROM ticket_replies WHERE ticket_id=?");
+                        $stmt = $conn->prepare("SELECT * FROM ticket_replies WHERE ticket_id=? ORDER BY id DESC LIMIT 11");
                         $stmt->execute([$selectedticket["ticketid"]]);
-                        $ticketReplies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $ticketReplies = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
 
                         foreach($ticketReplies as $reply)
                         {
-                            if($reply["user_id"] == $currUser["userid"])
-                            {
-                                echo '<p class="self-message">' . htmlspecialchars($reply["message"]) . '</p>';
+                            if ( $reply["system_msg"] == TRUE) {
+                                echo '<p class="system-message">' . htmlspecialchars($reply["message"]) . '</p>';
                             }
-                            else
-                            {
-                                echo '<p class="other-message">' . htmlspecialchars($reply["message"]) . '</p>';
+                            else {
+                                if($reply["user_id"] == $currUser["userid"])
+                                {
+                                    echo '<p class="self-message">' . htmlspecialchars($reply["message"]) . '</p>';
+                                }
+                                else
+                                {
+                                    echo '<p class="other-message">' . htmlspecialchars($reply["message"]) . '</p>';
+                                }
                             }
                         }
                         ?>
                     </div>
                 </div>
                 <div class="msginput-container">
-                    <input type="text" class="msginput bg-slate-600" id="msginput" onkeydown="sendmsg(this)">
+                    <?php if($selectedticket["status"] == "closed") { // closed ?>
+                        <input type="text" class="msginput bg-slate-600 disabled-msg-input" disabled id="msginput" placeholder="This ticket is closed. You may not reply to this ticket anymore." onkeydown="sendmsg(this)">
+                    <?php } else { ?>
+                        <input type="text" class="msginput bg-slate-600" id="msginput" onkeydown="sendmsg(this)">
+                    <?php } ?>
                     <i class="fa-regular fa-paper-plane fa-xl ml-3"></i>
                 </div>
             </div>
@@ -149,9 +162,9 @@
                         if($selectedticket["status"] == "open")
                         {
                     ?>
-                        <button type="button" class="mt-3 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900" onclick="closeTicket(<?= $selectedticket['ticketid'] ?>)">Close Ticket</button>
+                        <button type="button" class="statebtn mt-3 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900" onclick="closeTicket(<?= $selectedticket['ticketid'] ?>)">Close Ticket</button>
                     <?php } else{ ?>
-                        <button type="button" class="mt-3 focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5" onclick="openTicket(<?= $selectedticket['ticketid'] ?>)">Open Ticket</button>
+                        <button type="button" class="statebtn mt-3 focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5" onclick="openTicket(<?= $selectedticket['ticketid'] ?>)">Open Ticket</button>
                     <?php } ?>
                 </div>
                 <div class="statusbar">

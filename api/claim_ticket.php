@@ -21,4 +21,7 @@
     }
     $stmt = $conn->prepare("UPDATE tickets SET claimed_by=? WHERE id=?");
     $stmt->execute([$currUser["userid"], $ticketid]);
+
+    $stmt = $conn->prepare("INSERT INTO ticket_replies(ticket_id, user_id, message, system_msg) VALUES(?, ?, ?, 1)");
+    $stmt->execute([$ticketid, $currUser["userid"], "Your ticket was claimed by " . $currUser["username"]]);
 ?>

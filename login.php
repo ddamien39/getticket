@@ -19,7 +19,7 @@
         }
 
 
-        die();
+        die("invalid username/password");
     }
 
 ?>
