@@ -1,0 +1,112 @@
+main {
+  max-width: 800px;
+  margin: 50px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px; /* Espacement entre les sections */
+}
+.login-btn {
+  background: green;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.login-btn:hover {
+  background: darkgreen;
+}
+.admin-btn {
+  background: #ff9800; /* Couleur distincte pour l'administration */
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.admin-btn:hover {
+  background: #e68900;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+/* Style de la barre de navigation */
+nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Espacement entre les liens */
+  background: #007bff;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 10px 15px;
+  transition: background 0.3s;
+}
+
+nav a:hover {
+  background: #0056b3;
+  border-radius: 5px;
+}
+
+nav .logout-btn {
+  background: red;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* Style pour la section d'introduction */
+.intro {
+  text-align: center;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 600px;
+}
+
+/* Style pour la section des tickets */
+.ticket-preview {
+  text-align: center;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 600px;
+}
+
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 500px;
+  background: white;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  background: #007bff;
+  color: white;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}

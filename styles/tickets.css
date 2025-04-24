@@ -1,0 +1,167 @@
+.ticket-container {
+    width: 70%;
+    height: 60vh;
+
+    position:absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+
+    border-radius: 4px;
+
+    display:flex;
+    justify-content: center;
+}
+
+.ticket-container .leftside {
+    height: 100%;
+    width: 25%;
+
+    display:flex;
+    flex-direction: column;
+}
+
+.ticket-container .rightside {
+    height: 100%;   
+    width: 100%;
+}
+
+.ticket-container .rightside .topbar-info {
+    height: 15%;
+    display:flex;
+    align-items: center;
+}
+
+.topbar-info .user-pfp {
+    height: 50px;
+    border-radius: 17.5px;
+}
+
+.topbar-info .username {
+    font-size: 20px;
+}
+
+.topbar-info .user-rank {
+    font-size: 16px;
+}
+
+.user-info-container {
+    display:flex;
+    flex-direction: column;
+}
+
+.messages-container {
+    height: 75%;
+}
+
+.msginput-container {
+    height: 10%;
+    display:flex;
+    align-items:center;
+    margin: 0px 10px;
+}
+.msginput-container input {
+    height: 65%;
+    width: 95%;
+    color: white;
+    padding: 0px 10px;
+    border-radius: 4px;
+}
+.msginput-container i {
+    color: whitesmoke;
+}
+
+main {
+    min-height: 100vh;
+}
+
+.user-card {
+    display:flex;
+    align-items: center;
+    height: 15%;
+}
+
+.user-card .user-pfp {
+    height: 50px;
+    width: 50px;
+}
+
+.personal-user-card {
+    display:flex;
+    align-items: center;
+    height: 15%;
+}
+
+.personal-user-card .user-pfp {
+    height: 50px;
+    width: 50px;
+}
+
+.personal-user-card {
+    border-right: rgb(175, 175, 175) 1px dotted;
+    border-bottom: rgb(175, 175, 175) 1px dotted;
+}
+
+.user-card .user-combo {
+    margin-left: 10px;
+}
+
+.personal-user-card .user-combo {
+    margin-left: 10px;
+}
+
+.user-card:hover
+{
+    cursor:pointer;
+}
+
+.farright {
+    width: 300px;
+}
+
+.farright .actions {
+    display:flex;
+    align-items: center;
+    flex-direction: column;
+    height: 90%;
+}
+
+.farright .statusbar {
+    height: 10%;
+    display:flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.farright .statusbar .ticketstatus {
+    color: rgb(0, 242, 0);
+}
+
+.user-pfp {
+    border-radius: 25px;
+}
+
+.farright .statusbar .ticketclaimer {
+    color: rgb(242, 186, 0);
+}
+
+.self-message {
+    text-align:right;
+    margin: 0px 10px;
+    font-size: 1.25em;
+    border-right: 5px red solid;
+    padding: 0px 10px;
+}
+
+.other-message {
+    text-align:left;
+    margin: 0px 10px;
+    font-size: 1.25em;
+    border-left: 5px blue solid;
+    padding: 0px 10px;
+}
+
+.messages {
+    position:relative;
+    top:10px;
+}
