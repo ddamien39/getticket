@@ -1,4 +1,6 @@
-<?php include '../../components/header.php'; ?>
+<?php include '../../components/header.php';
+require_once '../db_connect.php';
+?>
 
 <?php
 session_start();
@@ -51,7 +53,7 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
             <div class="py-4 overflow-y-auto">
                 <ul class="space-y-2 font-medium">
                     <li class="mb-[15px]">
-                        <a href="../../index.php" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="/pages/index.php" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 21">
                                 <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z" />
                                 <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z" />
@@ -120,64 +122,97 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
     <!-- SECTION: Contenu principal -->
     <section class="main-content p-8 ml-80">
         <style>
-            .main-content {
-                padding: 20px;
-                max-width: 800px;
-                margin: auto;
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            /* ✅ Section Actions dans le tableau */
+            td.actions {
+                display: flex;
+                gap: 6px;
+                /* Espacement réduit pour un meilleur alignement */
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                /* Permet aux boutons de passer à la ligne si nécessaire */
             }
 
-            h2 {
-                text-align: center;
-                color: #333;
-                font-size: 24px;
-                margin-bottom: 20px;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                background: #fff;
-                border-radius: 8px;
-                overflow: hidden;
-            }
-
-            th,
-            td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
-
-            th {
+            /* ✅ Bouton "Modifier" - Bleu au survol */
+            a.modify {
                 background: #007bff;
+                /* Bleu par défaut */
                 color: white;
-                font-weight: bold;
+                padding: 3px 6px;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 60px;
+                text-align: center;
+                display: inline-block;
+                transition: background 0.3s ease-in-out;
             }
 
-            td {
-                background: #f9f9f9;
+            a.modify:hover {
+                background: #0056b3;
+                /* Bleu plus foncé au survol */
             }
 
-            a {
-                text-decoration: none;
-                color: #007bff;
-                font-weight: bold;
-                margin-right: 8px;
+            /* ✅ Bouton "Bannir 7 jours" - Orange au survol */
+            a.ban7 {
+                background: #ff9800;
+                /* Orange par défaut */
+                color: white;
+                padding: 3px 6px;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 60px;
+                text-align: center;
+                display: inline-block;
+                transition: background 0.3s ease-in-out;
             }
 
-            a:hover {
-                text-decoration: underline;
+            a.ban7:hover {
+                background: #e68900;
+                /* Orange plus foncé au survol */
+            }
+
+            /* ✅ Bouton "Bannir à vie" - Rouge au survol */
+            a.banlife {
+                background: #dc3545;
+                /* Rouge par défaut */
+                color: white;
+                padding: 3px 6px;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 60px;
+                text-align: center;
+                display: inline-block;
+                transition: background 0.3s ease-in-out;
+            }
+
+            a.banlife:hover {
+                background: #a71d2a;
+                /* Rouge plus foncé au survol */
+            }
+
+            /* ✅ Bouton "Supprimer" - Rouge au survol */
+            a.delete {
+                background: #dc3545;
+                /* Rouge par défaut */
+                color: white;
+                padding: 3px 6px;
+                font-size: 12px;
+                border-radius: 4px;
+                min-width: 60px;
+                text-align: center;
+                display: inline-block;
+                transition: background 0.3s ease-in-out;
+            }
+
+            a.delete:hover {
+                background: #a71d2a;
+                /* Rouge plus foncé au survol */
             }
         </style>
 
         <?php
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
-        require_once '../db_connect.php';
-
         // Vérifier si l'utilisateur est administrateur
         if (!isset($_SESSION["role_id"]) || $_SESSION["role_id"] !== 2) {
             die("<p style='color: red; text-align: center;'>Accès refusé.</p>");
@@ -205,12 +240,13 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
                     <td><?= htmlspecialchars($user["email"]) ?></td>
                     <td><?= $user["role_id"] ?></td>
                     <td><?= $user["banned_until"] ? $user["banned_until"] : "Non banni" ?></td>
-                    <td>
-                        <a href="./edit_users.php?id=<?= $user['id'] ?>">Modifier</a> |
-                        <a href="/db/admin/ban_users.php?id=<?= $user['id'] ?>&duration=7">Bannir 7 jours</a> |
-                        <a href="./ban_user.php?id=<?= $user['id'] ?>&duration=permanent">Bannir à vie</a> |
-                        <a href="./delete_user.php?id=<?= $user['id'] ?>" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</a>
+                    <td class="actions">
+                        <a href="./edit_users.php?id=<?= $user['id'] ?>" class="modify">Modifier</a>
+                        <a href="/db/admin/ban_users.php?id=<?= $user['id'] ?>&duration=7" class="ban7">Bannir 7 jours</a>
+                        <a href="./ban_user.php?id=<?= $user['id'] ?>&duration=permanent" class="banlife">Bannir à vie</a>
+                        <a href="./delete_user.php?id=<?= $user['id'] ?>" class="delete" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</a>
                     </td>
+
                 </tr>
             <?php endforeach; ?>
         </table>
