@@ -9,5 +9,5 @@ session_unset();
 session_destroy();
 
 // Redirection vers la page de connexion ou d'accueil
-header("Location: /login.php"); // Remplace "/login.php" par l'URL souhaitée
+header("Location: /home.php"); // Remplace "/login.php" par l'URL souhaitée
 exit();

@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["username"] = $user["username"];
             $_SESSION["role_id"] = $user["role_id"]; // Assure l'enregistrement du rôle
 
-            header("Location: ../index.php");
+            header("Location: /pages/index.php");
             exit;
         } else {
             echo "Identifiants incorrects.";

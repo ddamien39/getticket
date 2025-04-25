@@ -1,9 +1,11 @@
-<?php include '../../components/header.php';
-require_once '../db_connect.php';
+<?php
+require_once '../db/db_connect.php';
+require '../components/header.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ?>
 
 <?php
-session_start();
 if (!isset($_SESSION["username"])) {
     echo "Vous n'êtes pas connecté.";
     exit;
@@ -71,7 +73,7 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
                         </a>
                     </li>
                     <li class="mb-[15px]">
-                        <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="/pages/tickets.php?ticketid=1" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                                 <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z" />
                             </svg>
@@ -80,7 +82,7 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
                         </a>
                     </li>
                     <li class="mb-[15px]">
-                        <a href="./db/admin/manage_users.php" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="/db/admin/manage_users.php" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
                                 <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
                             </svg>
@@ -114,159 +116,81 @@ if (isset($_SESSION["role_id"]) && $_SESSION["role_id"] == "2") {
                             <span class="flex-1 ms-1 whitespace-nowrap">Home</span>
                         </a>
                     </li>
+
                 </ul>
             </div>
         </div>
-    </section>
-    <!-- SECTION: Contenu principal -->
-    <!-- SECTION: Contenu principal -->
-    <section class="main-content p-8 ml-80">
-        <style>
-            /* ✅ Section Actions dans le tableau */
-            td.actions {
-                display: flex;
-                gap: 6px;
-                /* Espacement réduit pour un meilleur alignement */
-                justify-content: center;
-                align-items: center;
-                flex-wrap: wrap;
-                /* Permet aux boutons de passer à la ligne si nécessaire */
-            }
-
-            /* ✅ Bouton "Modifier" - Bleu au survol */
-            a.modify {
-                background: #007bff;
-                /* Bleu par défaut */
-                color: white;
-                padding: 3px 6px;
-                font-size: 12px;
-                border-radius: 4px;
-                min-width: 60px;
-                text-align: center;
-                display: inline-block;
-                transition: background 0.3s ease-in-out;
-            }
-
-            a.modify:hover {
-                background: #0056b3;
-                /* Bleu plus foncé au survol */
-            }
-
-            /* ✅ Bouton "Bannir 7 jours" - Orange au survol */
-            a.ban7 {
-                background: #ff9800;
-                /* Orange par défaut */
-                color: white;
-                padding: 3px 6px;
-                font-size: 12px;
-                border-radius: 4px;
-                min-width: 60px;
-                text-align: center;
-                display: inline-block;
-                transition: background 0.3s ease-in-out;
-            }
-
-            a.ban7:hover {
-                background: #e68900;
-                /* Orange plus foncé au survol */
-            }
-
-            /* ✅ Bouton "Bannir à vie" - Rouge au survol */
-            a.banlife {
-                background: #dc3545;
-                /* Rouge par défaut */
-                color: white;
-                padding: 3px 6px;
-                font-size: 12px;
-                border-radius: 4px;
-                min-width: 60px;
-                text-align: center;
-                display: inline-block;
-                transition: background 0.3s ease-in-out;
-            }
-
-            a.banlife:hover {
-                background: #a71d2a;
-                /* Rouge plus foncé au survol */
-            }
-
-            /* ✅ Bouton "Supprimer" - Rouge au survol */
-            a.delete {
-                background: #dc3545;
-                /* Rouge par défaut */
-                color: white;
-                padding: 3px 6px;
-                font-size: 12px;
-                border-radius: 4px;
-                min-width: 60px;
-                text-align: center;
-                display: inline-block;
-                transition: background 0.3s ease-in-out;
-            }
-
-            a.delete:hover {
-                background: #a71d2a;
-                /* Rouge plus foncé au survol */
-            }
-        </style>
-
         <?php
-        error_reporting(E_ALL);
-        ini_set('display_errors', 1);
-        // Vérifier si l'utilisateur est administrateur
-        if (!isset($_SESSION["role_id"]) || $_SESSION["role_id"] !== 2) {
-            die("<p style='color: red; text-align: center;'>Accès refusé.</p>");
+        if (!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2) {
+            die("Accès refusé.");
         }
 
-        // Récupérer les utilisateurs
-        $stmt = $conn->query("SELECT * FROM users");
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Vérifier si la requête est bien exécutée
+        $ticketsCount = $conn->query("SELECT COUNT(*) FROM ticket_replies")->fetchColumn();
+        $usersCount = $conn->query("SELECT COUNT(*) FROM users")->fetchColumn();
+        $messagesCount = $conn->query("SELECT COUNT(*) FROM inbox_messages")->fetchColumn();
+
+
+
+        // Récupérer les 5 derniers tickets
+        $stmt = $conn->query("SELECT id, title, status FROM tickets ORDER BY created_at DESC LIMIT 5");
+        $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
         ?>
 
-        <h2>Gestion des utilisateurs</h2>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Nom d'utilisateur</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Banni jusqu'au</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach ($users as $user) : ?>
-                <tr>
-                    <td><?= $user["id"] ?></td>
-                    <td><?= htmlspecialchars($user["username"]) ?></td>
-                    <td><?= htmlspecialchars($user["email"]) ?></td>
-                    <td><?= $user["role_id"] ?></td>
-                    <td><?= $user["banned_until"] ? $user["banned_until"] : "Non banni" ?></td>
-                    <td class="actions">
-                        <a href="./edit_users.php?id=<?= $user['id'] ?>" class="modify">Modifier</a>
-                        <a href="/db/admin/ban_users.php?id=<?= $user['id'] ?>&duration=7" class="ban7">Bannir 7 jours</a>
-                        <a href="./ban_user.php?id=<?= $user['id'] ?>&duration=permanent" class="banlife">Bannir à vie</a>
-                        <a href="./delete_user.php?id=<?= $user['id'] ?>" class="delete" onclick="return confirm('Supprimer cet utilisateur ?')">Supprimer</a>
-                    </td>
+        <main>
+            <section class="stats">
+                <div class="stat-box">
+                    <h3>Total Tickets</h3>
+                    <p><?= $ticketsCount ?></p>
+                </div>
+                <div class="stat-box">
+                    <h3>Total Utilisateurs</h3>
+                    <p><?= $usersCount ?></p>
+                </div>
+                <div class="stat-box">
+                    <h3>Total Messages</h3>
+                    <p><?= $messagesCount ?></p>
+                </div>
+            </section>
 
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    </section>
+            <section class="ticket-list">
+                <h2>Derniers Tickets</h2>
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Sujet</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                    <?php foreach ($tickets as $ticket) : ?>
+                        <tr>
+                            <td><?= $ticket["id"] ?></td>
+                            <td><?= htmlspecialchars($ticket["title"] ?? "Pas de titre") ?></td>
 
+                            <td><?= $ticket["status"] ?></td>
+                            <td><a href="view_ticket.php?id=<?= $ticket["id"] ?>">Voir</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            </section>
+        </main>
+        <!-- JavaScript pour afficher et cacher le menu -->
+        <script>
+            // Écouteur pour afficher le drawer via les trois barres
+            document.querySelector("#menu-icon").addEventListener("click", function() {
+                const drawer = document.getElementById("drawer-navigation");
+                drawer.style.transform = "translateX(0)";
+            });
 
-    <!-- JavaScript pour afficher et cacher le menu -->
-    <script>
-        // Écouteur pour afficher le drawer via les trois barres
-        document.querySelector("#menu-icon").addEventListener("click", function() {
-            const drawer = document.getElementById("drawer-navigation");
-            drawer.style.transform = "translateX(0)";
-        });
-
-        // Écouteur pour cacher le drawer via la croix
-        document.querySelector("[data-drawer-hide]").addEventListener("click", function() {
-            const drawer = document.getElementById("drawer-navigation");
-            drawer.style.transform = "translateX(-100%)";
-        });
-    </script>
+            // Écouteur pour cacher le drawer via la croix
+            document.querySelector("[data-drawer-hide]").addEventListener("click", function() {
+                const drawer = document.getElementById("drawer-navigation");
+                drawer.style.transform = "translateX(-100%)";
+            });
+        </script>
 
 </body>
 

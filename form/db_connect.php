@@ -4,6 +4,8 @@ $sName = "localhost";
 $uName = "root";
 $pass = "root";
 $db_name = "getticket";
+global $pdo;
+
 
 try {
     $pdo = new PDO(
